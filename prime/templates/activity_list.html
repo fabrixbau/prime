@@ -1,0 +1,25 @@
+{% extends "prime/base.html" %}
+
+{% block title %}My Activities{% endblock %}
+
+{% block content %}
+<h2>My Activities</h2>
+
+{% for day, activities in activities_by_day.items %}
+    <h3>{{ day }}</h3>
+    {% if activities %}
+        <ul>
+        {% for activity in activities %}
+            <li>
+                <a href="{% url 'prime:activity_detail' activity.id %}">
+                    {{ activity.name }} - {{ activity.start_time|time:"H:i" }}
+                </a>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No activities scheduled for this day.</p>
+    {% endif %}
+{% endfor %}
+
+{% endblock %}

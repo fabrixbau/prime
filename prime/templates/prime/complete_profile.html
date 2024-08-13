@@ -1,0 +1,23 @@
+{% extends "prime/base.html" %}
+
+{% block title %}Complete Profile{% endblock %}
+
+{% block content %}
+<h2>Complete Your Profile</h2>
+<form method="post" action="{% url 'prime:complete_profile' %}">
+    {% csrf_token %}
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required><br>
+
+    <label for="lastname">Last Name:</label>
+    <input type="text" id="lastname" name="lastname" required><br>
+
+    <label for="nickname">Nickname:</label>
+    <input type="text" id="nickname" name="nickname"><br>
+
+    <label for="age">Age:</label>
+    <input type="number" id="age" name="age" required><br>
+
+    <button type="submit">Save</button>
+</form>
+{% endblock %}
