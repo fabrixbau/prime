@@ -1,0 +1,15 @@
+{% extends "prime/base.html" %}
+
+{% block title %}Activity Details{% endblock %}
+
+{% block content %}
+<h2>{{ activity.name }}</h2>
+
+<p><strong>Description:</strong> {{ activity.description }}</p>
+<p><strong>Duration:</strong> {{ activity.duration_minutes }} minutes</p>
+<p><strong>Start Time:</strong> {{ activity.start_time|time:"H:i" }}</p>
+<p><strong>Days of the Week:</strong> {{ activity.get_days_display }}</p>
+
+<a href="{% url 'prime:edit_activity' activity.id %}">Edit Activity</a><br>
+<a href="{% url 'prime:activity_list' %}">Back to Activities</a>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "prime/base.html" %}
+
+{% block title %}Edit Activity{% endblock %}
+
+{% block content %}
+<h2>Edit Activity: {{ activity.name }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <label for="name">Activity Name:</label>
+    <input type="text" id="name" name="name" value="{{ activity.name }}" required><br>
+
+    <label for="description">Description:</label>
+    <textarea id="description" name="description">{{ activity.description }}</textarea><br>
+
+    <label>Days of the Week:</label><br>
+    
+    <!-- Checkbox to select all days -->
+    <input type="checkbox" id="select_all" onclick="toggleAllDays(this)">
+    <label for="select_all"><strong>Select All Days</strong></label><br>
+
+    {% for day, label in days_of_week_choices.items %}
+        <input type="checkbox" id="{{ day }}" name="days_of_week" value="{{ day }}" {% if day in activity.days_of_week.split %}checked{% endif %}>
+        <label for="{{ day }}">{{ label }}</label><br>
+    {% endfor %}
+
+    <label for="duration">Duration (minutes):</label>
+    <input type="number" id="duration" name="duration_minutes" value="{{ activity.duration_minutes }}" required><br>
+
+    <label for="start_time">Start Time:</label>
+    <input type="time" id="start_time" name="start_time" value="{{ activity.start_time }}" required><br>
+
+    <input type="submit" value="Save Changes">
+</form>
+
+<a href="{% url 'prime:activity_detail' activity.id %}">Cancel</a>
+
+<script>
+    function toggleAllDays(source) {
+        checkboxes = document.querySelectorAll('input[name="days_of_week"]');
+        for (var i = 0; i < checkboxes.length; i++) {
+            checkboxes[i].checked = source.checked;
+        }
+    }
+</script>
+
+{% endblock %}

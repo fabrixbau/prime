@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from .models import UserProfile
 from .models import Activity
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 
@@ -136,3 +137,41 @@ def activity_list(request):
     # Pasar las actividades organizadas al template
     return render(request, 'prime/activity_list.html',
                   {'activities_by_day': activities_by_day})
+
+
+@login_required
+def activity_detail(request, activity_id):
+    # Obtener la actividad específica por ID
+    activity = get_object_or_404(Activity, id=activity_id, user=request.user)
+    return render(request, 'prime/activity_detail.html',
+                  {'activity': activity})
+
+
+@login_required
+def edit_activity(request, activity_id):
+    activity = get_object_or_404(Activity, id=activity_id, user=request.user)
+
+    days_of_week_choices = {
+        'Mon': 'Monday',
+        'Tue': 'Tuesday',
+        'Wed': 'Wednesday',
+        'Thu': 'Thursday',
+        'Fri': 'Friday',
+        'Sat': 'Saturday',
+        'Sun': 'Sunday'
+    }
+
+    if request.method == 'POST':
+        activity.name = request.POST['name']
+        activity.description = request.POST['description']
+        activity.days_of_week = " ".join(request.POST.getlist('days_of_week'))
+        activity.duration_minutes = request.POST['duration_minutes']
+        activity.start_time = request.POST['start_time']
+        activity.save()
+
+        return redirect('prime:activity_detail', activity_id=activity.id)
+
+    return render(request, 'prime/edit_activity.html', {
+        'activity': activity,
+        'days_of_week_choices': days_of_week_choices
+    })

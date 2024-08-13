@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 class Activity(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    days_of_week = models.CharField(max_length=7)  # e.g., 'MTWTFSS'
+    days_of_week = models.CharField(max_length=27)  # e.g., 'MTWTFSS'
     duration_minutes = models.PositiveIntegerField()  # Duration in minutes
     start_time = models.TimeField()  # Scheduled start time
     end_time = models.TimeField(null=True, blank=True)  # Actual end time
