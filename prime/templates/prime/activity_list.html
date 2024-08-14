@@ -12,7 +12,7 @@
         {% for activity in activities %}
             <li>
                 <a href="{% url 'prime:activity_detail' activity.id %}">
-                    {{ activity.name }} - {{ activity.start_time|time:"H:i" }}
+                    {{ activity.name }} - {{ activity.start_time|time:"H:i" }} - {{ activity.end_time|time:"H:i" }}
                 </a>
             </li>
         {% endfor %}

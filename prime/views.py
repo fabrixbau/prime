@@ -20,13 +20,6 @@ def home(request):
     return render(request, 'prime/home.html', {'user_profile': user_profile})
 
 
-def new_activity(request):
-    if request.method == 'POST':
-        # Handle the creation of a new activity
-        pass
-    return render(request, 'prime/new_activity.html')
-
-
 def metrics(request):
     # Gather and pass metrics data to the template
     context = {
@@ -93,6 +86,13 @@ def complete_profile(request):
         return redirect("/")
 
     return render(request, "prime/complete_profile.html")
+
+
+def new_activity(request):
+    if request.method == 'POST':
+        # Handle the creation of a new activity
+        pass
+    return render(request, 'prime/new_activity.html')
 
 
 @login_required
