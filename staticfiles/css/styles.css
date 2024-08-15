@@ -1,0 +1,85 @@
+/* styles.css */
+body {
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+}
+
+.sidebar {
+    width: 200px;
+    background-color: #f4f4f4;
+    padding: 10px;
+}
+
+.sidebar nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar nav ul li {
+    margin: 10px 0;
+}
+
+.sidebar nav ul li a {
+    text-decoration: none;
+    color: #333;
+}
+
+.content {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+.completed {
+    color: green;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+.not-completed {
+    color: red;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+.delete-button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+.delete-button:hover {
+    background-color: #d32f2f;
+}
+
+.inline-form {
+    display: inline;
+}
+
+#calendar {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}

@@ -1,0 +1,22 @@
+{% extends "prime/base.html" %}
+
+{% block title %}My Calendar{% endblock %}
+
+{% block content %}
+    <h2>My Calendar</h2>
+    <div id='calendar'></div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar/index.global.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: '/get-events/',  // URL que servirá los eventos
+            });
+            calendar.render();
+        });
+    </script>
+{% endblock %}

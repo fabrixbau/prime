@@ -1,0 +1,57 @@
+{% extends "prime/base.html" %}
+
+{% block title %}Create Activity{% endblock %}
+
+{% block content %}
+  <h2>Create New Activity</h2>
+
+  <form method="post">
+    {% csrf_token %}
+    <div>
+      <label for="id_name">Name:</label>
+      <input type="text" id="id_name" name="name" value="{{ form.name.value|default_if_none:'' }}" required>
+    </div>
+
+    <div>
+      <label for="id_description">Description:</label>
+      <textarea id="id_description" name="description">{{ form.description.value|default_if_none:'' }}</textarea>
+    </div>
+
+    <div>
+      <label>Days of week:</label>
+      <div>
+        <label><input type="checkbox" name="days_of_week" value="Mon"> Mon</label>
+        <label><input type="checkbox" name="days_of_week" value="Tue"> Tue</label>
+        <label><input type="checkbox" name="days_of_week" value="Wed"> Wed</label>
+        <label><input type="checkbox" name="days_of_week" value="Thu"> Thu</label>
+        <label><input type="checkbox" name="days_of_week" value="Fri"> Fri</label>
+        <label><input type="checkbox" name="days_of_week" value="Sat"> Sat</label>
+        <label><input type="checkbox" name="days_of_week" value="Sun"> Sun</label>
+      </div>
+      <button type="button" onclick="selectAllDays()">Select All Days</button>
+    </div>
+
+    <div>
+      <label for="id_start_time">Start time:</label>
+      <input type="time" id="id_start_time" name="start_time" value="{{ form.start_time.value|default_if_none:'' }}" required>
+    </div>
+
+    <div>
+      <label for="id_duration_minutes">Duration minutes:</label>
+      <input type="number" id="id_duration_minutes" name="duration_minutes" value="{{ form.duration_minutes.value|default_if_none:'' }}" required>
+    </div>
+
+    <button type="submit">Save Activity</button>
+  </form>
+  
+  <a href="{% url 'prime:activity_list' %}">Back to Activity List</a>
+
+  <script>
+    function selectAllDays() {
+        const checkboxes = document.querySelectorAll('input[name="days_of_week"]');
+        checkboxes.forEach((checkbox) => {
+            checkbox.checked = true;
+        });
+    }
+  </script>
+{% endblock %}
