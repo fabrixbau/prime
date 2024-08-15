@@ -27,4 +27,6 @@ urlpatterns = [
          views.delete_activity, name='delete_activity'),
     path('calendar/', views.calendar_view, name='calendar_view'),
     path('get-events/', views.get_events, name='get_events'),
+    path('activities/log/<int:log_id>/delete/',
+         views.delete_activity_log, name='delete_activity_log'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

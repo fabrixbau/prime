@@ -15,27 +15,25 @@
                     {% for log in logs %}
                         {% if log %}
                             <span class="status-box">
-                                <!-- Mantener el cuadro siempre visible -->
                                 {% if not log.marked %}
-                                    ⬜ <!-- Cuadro vacío -->
+                                    ⬜ <!-- Empty box -->
                                 {% elif log.completed %}
                                     <span class="status-mark">✔️</span>
                                 {% else %}
                                     <span class="status-mark">❌</span>
                                 {% endif %}
                             </span>
-
-                            <!-- Enlace para marcar como completada -->
+                            <!-- Links to mark as completed or not -->
                             <a href="{% url 'prime:mark_activity' log.id %}?completed=true" class="completed">✔️</a>
-                            <!-- Enlace para marcar como no completada -->
                             <a href="{% url 'prime:mark_activity' log.id %}?completed=false" class="not-completed">❌</a>
+
+                            <!-- Form to delete this specific log -->
+                            <form action="{% url 'prime:delete_activity_log' log.id %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">Eliminar actividad</button>
+                            </form>
                         {% endif %}
                     {% endfor %}
-
-                    <form action="{% url 'prime:delete_activity' activity.id %}" method="post" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Eliminar actividad</button>
-                    </form>
                 </li>
             {% endfor %}
         </ul>
@@ -43,5 +41,6 @@
         <p>No activities scheduled for this day.</p>
     {% endif %}
 {% endfor %}
+
 
 {% endblock %}

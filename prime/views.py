@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from .models import UserProfile, Activity, ActivityLog
 from django import forms
 from django.http import JsonResponse
+from django.http import HttpResponseForbidden
 
 
 # Vista principal
@@ -254,7 +255,7 @@ def delete_activity(request, activity_id):
     return render(request, 'prime/delete_activity_confirm.html',
                   {'activity': activity})
 
-# Crear logs automáticamente al crear la actividad
+# LOGS
 
 
 @receiver(post_save, sender=Activity)
@@ -279,3 +280,15 @@ def create_activity_log(sender, instance, created, **kwargs):
                     ActivityLog.objects.create(
                         activity=instance, date=date_for_log
                     )
+
+
+@login_required
+def delete_activity_log(request, log_id):
+    log = get_object_or_404(ActivityLog, id=log_id,
+                            activity__user=request.user)
+
+    if request.method == "POST":
+        log.delete()
+        return redirect('prime:activity_list')
+
+    return HttpResponseForbidden("Cannot delete this activity log.")
