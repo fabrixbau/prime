@@ -1,41 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Home{% endblock %}</title>
     {% load static %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'css/styles.css' %}"
+    />
+  </head>
+  <body>
     <div class="container">
-        <header>
+      <aside class="sidebar">
+        <nav>
+          <ul>
+            <li><a href="{% url 'prime:home' %}">Home</a></li>
+            <li>
+              <a href="{% url 'prime:create_activity' %}">New Activity</a>
+            </li>
+            <li>
+              <a href="{% url 'prime:activity_list' %}">View Activities</a>
+            </li>
+            <li><a href="{% url 'prime:metrics' %}">Metrics</a></li>
             {% if user.is_authenticated %}
-                <p>Welcome, {{ user.username }}! {{ user.last_name }}, {{user_profile.nickname}}, {{user_profile.age}}<a href="{% url 'prime:logout' %}">Logout</a></p>
+            <li><a href="{% url 'prime:logout' %}">Logout</a></li>
+            <li>
+              <a href="{% url 'prime:complete_profile' %}">Complete Profile</a>
+            </li>
             {% else %}
-                <p><a href="{% url 'prime:login' %}">Login</a></p>
+            <li><a href="{% url 'prime:login' %}">Login</a></li>
+            <li><a href="{% url 'prime:crear_usuario' %}">Sign Up</a></li>
             {% endif %}
-        </header>
-        <aside class="sidebar">
-            <nav>
-                <ul>
-                    <li><a href="{% url 'prime:home' %}">Home</a></li>
-                    <li><a href="{% url 'prime:create_activity' %}">New Activity</a></li>
-                    <li><a href="{% url 'prime:activity_list' %}">View Activities</a></li>
-                    <li><a href="{% url 'prime:metrics' %}">Metrics</a></li>
-                    {% if user.is_authenticated %}
-                        <li><a href="{% url 'prime:logout' %}">Logout</a></li>
-                        <li><a href="{% url 'prime:complete_profile' %}">Complete Profile</a></li>
-                    {% else %}
-                        <li><a href="{% url 'prime:login' %}">Login</a></li>
-                        <li><a href="{% url 'prime:crear_usuario' %}">Sign Up</a></li>
-                    {% endif %}
-                </ul>
-            </nav>
-        </aside>
-        <main class="content">
-            {% block content %}{% endblock %}
-        </main>
+          </ul>
+        </nav>
+      </aside>
+      <main class="content">{% block content %}{% endblock %}</main>
+      <header></header>
+        {% if user.is_authenticated %}
+        <p>
+          Welcome {{ user.username }} {{ user.last_name }},
+          {{user_profile.nickname}}
+        </p>
+        {% else %}
+        <p><a href="{% url 'prime:login' %}">Login</a></p>
+        {% endif %}
+      </header>
     </div>
-</body>
+  </body>
 </html>

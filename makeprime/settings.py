@@ -67,6 +67,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# login url
+LOGIN_URL = '/login/' 
+
+
 # Redirect to home page after login
 LOGIN_REDIRECT_URL = 'prime:home'
 LOGOUT_REDIRECT_URL = 'prime:home'

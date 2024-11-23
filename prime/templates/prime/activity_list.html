@@ -3,44 +3,57 @@
 {% block title %}My Activities{% endblock %}
 
 {% block content %}
-<h2>My Activities</h2>
+<h2>My Activities for {{ month }}/{{ year }}</h2>
+<form action="{% url 'prime:delete_all_activities' %}" method="post"
+    onsubmit="return confirm('Are you sure to delete all activities?');">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Delete all activities</button>
+</form>
 
-{% for day, activities in activities_by_day %}
-    <h3>{{ day }} - {{ activities|length }} activities</h3>
-    {% if activities %}
-        <ul>
-            {% for activity, logs in activities %}
-                <li>
-                    {{ activity.name }} {{ activity.start_time|time:"h:i a" }} - {{ activity.end_time|time:"h:i a" }}
-                    {% for log in logs %}
-                        {% if log %}
-                            <span class="status-box">
-                                {% if not log.marked %}
-                                    ⬜ <!-- Empty box -->
-                                {% elif log.completed %}
-                                    <span class="status-mark">✔️</span>
-                                {% else %}
-                                    <span class="status-mark">❌</span>
-                                {% endif %}
-                            </span>
-                            <!-- Links to mark as completed or not -->
-                            <a href="{% url 'prime:mark_activity' log.id %}?completed=true" class="completed">✔️</a>
-                            <a href="{% url 'prime:mark_activity' log.id %}?completed=false" class="not-completed">❌</a>
+<!-- button for navigate between months -->
+<div class="calendar-nav">
+    <a href="?month={{ previous_month.month }}&year={{ previous_month.year }}">(Previous month</a>
+    <span>{{ month }}/{{ year }}</span>
+    <a href="?month={{ next_month.month }}&year={{ next_month.year }}">Next month)</a>
+</div>
+{% for day, activities in calendar_data %}
+<h3>{{ day|date:"D, d M Y" }} - {{ activities|length }} activities</h3>
+{% if activities %}
+<ul>
+    {% for activity, status, log in activities %}
+    <li>
+        {{ activity.name }} {{ activity.start_time|time:"h:i a" }} - {{ activity.end_time|time:"h:i a" }}
+        <span class="status-box">
+            {% if status == None %}
+            ⬜ <!-- Empty box -->
+            {% elif status == "✔️" %}
+            ✔️
+            {% elif status == "❌" %}
+            ❌
+            {% endif %}
+        </span>
 
-                            <!-- Form to delete this specific log -->
-                            <form action="{% url 'prime:delete_activity_log' log.id %}" method="post" style="display:inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger">Eliminar actividad</button>
-                            </form>
-                        {% endif %}
-                    {% endfor %}
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No activities scheduled for this day.</p>
-    {% endif %}
+        <!-- Buttons to mark completed or incompleted -->
+        <form action="{% url 'prime:mark_activity' activity.id %}" method="post" class="inline-form">
+            {% csrf_token %}
+            <input type="hidden" name="date" value="{{ day|date:'Y-m-d' }}">
+            <button type="submit" name="status" value="✔️" class="btn btn-succes">✔️</button>
+            <button type="submit" name="status" value="❌" class="btn btn-incompleted">❌</button>
+        </form>
+
+        <!-- logs of activities -->
+        {% if log and log.id %}
+        <form action="{% url 'prime:delete_activity_log' log.id %}" method="post" class="inline-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Delete activity</button>
+        </form>
+        {% endif %}
+
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No activities scheduled for this day.</p>
+{% endif %}
 {% endfor %}
-
-
 {% endblock %}

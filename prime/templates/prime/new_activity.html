@@ -36,26 +36,33 @@
 
     <input type="checkbox" id="sunday" name="days_of_week" value="Sun">
     <label for="sunday">Sunday</label><br>
-
+    
+    <label for="start_time">Start Time:</label>
+    <input type="time" id="start_time" name="start_time" required><br>
+    
     <label for="duration">Duration (minutes):</label>
     <input type="number" id="duration" name="duration_minutes" required><br>
 
-    <label for="start_time">Start Time:</label>
-    <input type="time" id="start_time" name="start_time" required><br>
+    <label for="start_date">Start Date (optional):</label>
+    <input type="date" id="start_date" name="start_date"><br>
 
+    <label for="end_date">End Date (optional):</label>
+    <input type="date" id="end_date" name="end_date"><br>
 
-    <input type="submit" value="Create Activity">
+    <button type="submit">Create Activity</button>
 </form>
 
+<!-- Script para "Seleccionar todos los días" -->
 <script>
-    function toggleAllDays(source) {
-        checkboxes = document.querySelectorAll('input[name="days_of_week"]');
-        for(var i = 0; i < checkboxes.length; i++) {
-            checkboxes[i].checked = source.checked;
-        }
+    function toggleAllDays(selectAllCheckbox) {
+        //get all checkboxes of days
+        const dayCheckboxes = document.querySelectorAll('input[name="days_of_week"]');
+        dayCheckboxes.forEach(checkbox=> {
+            checkbox.checked = selectAllCheckbox.checked; // mark or dismark dependly checkbox
+        });
     }
 
-     document.getElementById('start_time').addEventListener('input', function(e) {
+    document.getElementById('start_time').addEventListener('input', function (e) {
         const timeValue = e.target.value;
         if (timeValue) {
             // Formato HH:MM para 24 horas
@@ -64,4 +71,5 @@
         }
     });
 </script>
+
 {% endblock %}

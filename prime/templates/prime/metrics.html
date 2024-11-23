@@ -1,11 +1,30 @@
 {% extends "prime/base.html" %}
 
-{% block title %}Metrics{% endblock %}
+{% block title %}
+Metrics
+{% endblock %}
 
 {% block content %}
 <h2>Activity Metrics</h2>
-<!-- Display metrics and statistics here -->
-<p>Number of activities completed: {{ completed_activities }}</p>
-<p>Number of activities missed: {{ missed_activities }}</p>
-<!-- Additional metrics and charts can be added here -->
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Total Activities</th>
+      <th>Completed Activities</th>
+      <th>Incompleted Activities</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for stat in activity_stats %}
+    <tr>
+      <td>{{ stat.name }}</td>
+      <td>{{ stat.total_count }}</td>
+      <td>{{ stat.completed_count }}</td>
+      <td>{{ stat.incompleted_count }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock %}
