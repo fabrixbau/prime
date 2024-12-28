@@ -70,6 +70,23 @@
             e.target.value = `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
         }
     });
+
+    document.querySelector('form').addEventListener('submit', function (e) {
+            const daysChecked = document.querySelectorAll('input[name="days_of_week"]:checked');
+            const startTime = document.getElementById('start_time').value;
+            const duration = document.getElementById('duration').value;
+
+            if (daysChecked.length === 0) {
+                e.preventDefault();
+                alert('Debes seleccionar al menos un día de la semana.');
+                return;
+            }
+
+            if (!startTime || !duration) {
+                e.preventDefault();
+                alert('Debes completar todos los campos obligatorios.');
+            }
+        });
 </script>
 
 {% endblock %}

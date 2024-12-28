@@ -1,59 +1,131 @@
 {% extends "prime/base.html" %}
+{% load static %}
 
 {% block title %}My Activities{% endblock %}
 
 {% block content %}
 <h2>My Activities for {{ month }}/{{ year }}</h2>
+
+<!-- Botón para borrar todas las actividades -->
 <form action="{% url 'prime:delete_all_activities' %}" method="post"
     onsubmit="return confirm('Are you sure to delete all activities?');">
     {% csrf_token %}
     <button type="submit" class="btn btn-danger">Delete all activities</button>
 </form>
 
-<!-- button for navigate between months -->
+<!-- Navegación entre meses -->
 <div class="calendar-nav">
     <a href="?month={{ previous_month.month }}&year={{ previous_month.year }}">(Previous month</a>
     <span>{{ month }}/{{ year }}</span>
     <a href="?month={{ next_month.month }}&year={{ next_month.year }}">Next month)</a>
 </div>
-{% for day, activities in calendar_data %}
-<h3>{{ day|date:"D, d M Y" }} - {{ activities|length }} activities</h3>
-{% if activities %}
-<ul>
-    {% for activity, status, log in activities %}
-    <li>
-        {{ activity.name }} {{ activity.start_time|time:"h:i a" }} - {{ activity.end_time|time:"h:i a" }}
-        <span class="status-box">
-            {% if status == None %}
-            ⬜ <!-- Empty box -->
-            {% elif status == "✔️" %}
-            ✔️
-            {% elif status == "❌" %}
-            ❌
-            {% endif %}
-        </span>
 
-        <!-- Buttons to mark completed or incompleted -->
-        <form action="{% url 'prime:mark_activity' activity.id %}" method="post" class="inline-form">
+<!-- Calendario -->
+<div class="calendar-container">
+    <table class="calendar">
+        <thead>
+            <tr>
+                <th>Mon</th>
+                <th>Tue</th>
+                <th>Wed</th>
+                <th>Thu</th>
+                <th>Fri</th>
+                <th>Sat</th>
+                <th>Sun</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for week in calendar_data %}
+            <tr>
+                {% for day in week %}
+                <td>
+                    {% if day.date %}
+                    <div class="day">
+                        <div class="date">{{ day.date }}</div>
+                        {% if day.activities %}
+                        <ul>
+                            {% for activity, status, log in day.activities %}
+                            <li>
+                                {{ activity.name }}
+                                <!-- Mostrar el estado actual -->
+                                <span class="status-box">
+                                    {% if status == None %}
+                                    ⬜ <!-- Actividad sin estado (vacío) -->
+                                    {% elif status == "✔️" %}
+                                    ✔️ <!-- Actividad completada -->
+                                    {% elif status == "❌" %}
+                                    ❌ <!-- Actividad no completada -->
+                                    {% endif %}
+                                </span>
+                                <!-- Botones de paloma y tache -->
+                                <form action="{% url 'prime:mark_activity' activity.id %}" method="post"
+                                    class="inline-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="date" value="{{ day.date|date:'Y-m-d' }}">
+                                    <button type="submit" name="status" value="✔️" class="btn btn-success">✔️</button>
+                                    <button type="submit" name="status" value="❌" class="btn btn-danger">❌</button>
+                                </form>
+
+                                <!-- Botón para editar actividad -->
+                                <button data-id="{{ activity.id }}" class="btn-edit-activity">Edit</button>
+
+                                <!-- Botón para eliminar el registro de la actividad -->
+                                <form action="{% url 'prime:delete_activity_for_day' activity.id day.date|date:'Y-m-d' %}" method="post"
+                                    class="inline-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p>No activities</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal para editar actividad -->
+<div id="editActivityModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Edit Activity</h2>
+        <form id="editActivityForm" method="post">
             {% csrf_token %}
-            <input type="hidden" name="date" value="{{ day|date:'Y-m-d' }}">
-            <button type="submit" name="status" value="✔️" class="btn btn-succes">✔️</button>
-            <button type="submit" name="status" value="❌" class="btn btn-incompleted">❌</button>
+            <input type="hidden" name="activity_id" id="activity_id">
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" required>
+            <label for="description">Description:</label>
+            <textarea name="description" id="description"></textarea>
+            <label for="days_of_week">Days of the Week:</label>
+            <select name="days_of_week" id="days_of_week" multiple>
+                <option value="Mon">Monday</option>
+                <option value="Tue">Tuesday</option>
+                <option value="Wed">Wednesday</option>
+                <option value="Thu">Thursday</option>
+                <option value="Fri">Friday</option>
+                <option value="Sat">Saturday</option>
+                <option value="Sun">Sunday</option>
+            </select>
+            <label for="start_time">Start Time:</label>
+            <input type="time" name="start_time" id="start_time" required>
+            <label for="duration_minutes">Duration (minutes):</label>
+            <input type="number" name="duration_minutes" id="duration_minutes" required>
+            <label for="reset_logs">Reset Logs:</label>
+            <select name="reset_logs" id="reset_logs">  
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+            </select>
+            <button type="submit" class="btn btn-success">Save Changes</button>
         </form>
-
-        <!-- logs of activities -->
-        {% if log and log.id %}
-        <form action="{% url 'prime:delete_activity_log' log.id %}" method="post" class="inline-form">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Delete activity</button>
-        </form>
-        {% endif %}
-
-    </li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>No activities scheduled for this day.</p>
-{% endif %}
-{% endfor %}
+    </div>
+</div>
+<script src="{% static 'js/activity_list.js' %}"></script>
 {% endblock %}
