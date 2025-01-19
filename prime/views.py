@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
 from prime.forms import ActivityForm
-from .models import UserProfile, Activity, ActivityLog
+from .models import UserProfile, Activity, ActivityLog, ActivityExclusion
 from django import forms
 from django.http import JsonResponse
 from django.http import HttpResponseForbidden
@@ -150,7 +150,7 @@ def create_activity(request):
         end_date = request.POST.get('end_date') or None
 
         # Crear y guardar la instancia de Activity con el usuario asignado
-        activity = Activity(
+        activity = Activity.objects.create_activity(
             user=request.user,
             name=name,
             description=description,
