@@ -104,40 +104,6 @@
     </table>
 </div>
 
-<!-- Modal para editar actividad -->
-<div id="editActivityModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2>Edit Activity</h2>
-        <form id="editActivityForm" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="activity_id" id="activity_id">
-            <label for="name">Name:</label>
-            <input type="text" name="name" id="name" required>
-            <label for="description">Description:</label>
-            <textarea name="description" id="description"></textarea>
-            <label for="days_of_week">Days of the Week:</label>
-            <select name="days_of_week" id="days_of_week" multiple>
-                <option value="Mon">Monday</option>
-                <option value="Tue">Tuesday</option>
-                <option value="Wed">Wednesday</option>
-                <option value="Thu">Thursday</option>
-                <option value="Fri">Friday</option>
-                <option value="Sat">Saturday</option>
-                <option value="Sun">Sunday</option>
-            </select>
-            <label for="start_time">Start Time:</label>
-            <input type="time" name="start_time" id="start_time" required>
-            <label for="duration_minutes">Duration (minutes):</label>
-            <input type="number" name="duration_minutes" id="duration_minutes" required>
-            <label for="reset_logs">Reset Logs:</label>
-            <select name="reset_logs" id="reset_logs">
-                <option value="no">No</option>
-                <option value="yes">Yes</option>
-            </select>
-            <button type="submit" class="btn btn-success">Save Changes</button>
-        </form>
-    </div>
-</div>
+
 <script src="{% static 'js/activity_list.js' %}"></script>
 {% endblock %}

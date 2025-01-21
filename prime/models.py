@@ -133,8 +133,30 @@ class Activity(models.Model):
             [days[day] for day in self.days_of_week if day in days])
         
     def update_logs(self):
-        ActivityLog.objects.filter(activity=self).delete()
-        self.create_logs()
+        # calculate the complete range of dates after update them
+        start_date = self.start_date
+        end_date = self.end_date
+        
+        if isinstance(start_date, str):
+            start_date = datetime.strftime(start_date, '%Y-%m-%d').date()
+        if isinstance(end_date, str):
+            end_date = datetime.strftime(end_date, '%Y-%m-%d').date()
+        
+        valid_days= set(self.days_of_week)
+        
+        existing_logs = ActivityLog.objects.filter(activity=self)
+    
+        for log in existing_logs:
+            log_day_abbr = log.date.strftime('%a')[:3]
+            if log.date < start_date or log.date > end_date or log_day_abbr not in valid_days:
+                log.delete()
+        
+        # create new logs for the dates aditionals  
+        for single_date in date_range(start_date, end_date):
+            day_abbr = single_date.strftime('%a')[:3]
+            if day_abbr in valid_days:
+                ActivityLog.objects.get_or_create(activity=self, user=self.user, date=single_date)
+            
 
     def calculate_metrics(self):
         logs = ActivityLog.objects.filter(activity=self)

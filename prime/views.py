@@ -198,6 +198,11 @@ def edit_activity(request, activity_id):
         start_date = request.POST.get('start_date') or activity.start_date
         end_date = request.POST.get('end_date') or activity.end_date
         
+        if isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        if isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+
         activity.update_activity(
             name=name,
             description = description,
@@ -314,6 +319,7 @@ def activity_list(request):
                     # Excluir días marcados como excluidos
                     if not ActivityExclusion.objects.filter(activity=activity, date=current_date).exists():
                         log = ActivityLog.objects.filter(activity=activity, date=current_date).first()
+                        status = log.status if log else None
                         day_activities.append((activity, log.status if log else None, log))
 
             # Agregar datos del día al calendario
@@ -379,19 +385,17 @@ def delete_activity_for_day(request, activity_id, date):
     except ValueError:
         return HttpResponseForbidden("Fecha inválida. Usa el formato YYYY-MM-DD.")
     
+    # Record the exclusion of the day
+    exclusion, created = ActivityExclusion.objects.get_or_create(activity=activity, date= day)
+    
     # Eliminar el log para ese día específico
     ActivityLog.objects.filter(activity=activity, date=day).delete()
     
-    # Verificar si aún hay logs asociados
-    remaining_logs = ActivityLog.objects.filter(activity=activity).exists()
-
-    # Si no quedan logs para esa actividad, no eliminar la actividad completamente
-    if not remaining_logs:
-        activity.delete()
+    # check if it was made correct the exclusion
+    if created:
+        print(f"Exclusion creada para la actividad '{activity.name}' en el día {day}.")
     else:
-        # Si quedan logs, no eliminar la actividad, pero verifica si hay datos relacionados al día actual
-        # (esto asegura que no queden datos huérfanos para la fecha específica)
-        ActivityLog.objects.filter(activity=activity, date=day).delete()
+        print(f"Exclusion ya existente para la actividad '{activity.name}' en el dia {day}.")
 
     return redirect('prime:activity_list')
 
