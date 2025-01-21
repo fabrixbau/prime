@@ -20,6 +20,6 @@ urlpatterns = [
     path('activities/<int:activity_id>/', views.activity_detail, name='activity_detail'),
     path('activities/<int:activity_id>/delete/', views.delete_activity, name='delete_activity'),
     path('activities/delete-all/', views.delete_all_activities, name='delete_all_activities'),
-    path('mark_actvity/<int:activity_id>/', views.mark_activity, name='mark_activity'),
+    path('mark_actvity/<int:log_id>/', views.mark_activity, name='mark_activity'),
     path('activities/<int:activity_id>/delete/<str:date>/', views.delete_activity_for_day, name='delete_activity_for_day'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

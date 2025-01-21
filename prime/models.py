@@ -25,6 +25,23 @@ class UserProfile(models.Model):
         return self.user.username
 
 
+class ActivityManager(models.Manager):
+    def create_activity(self, user, name, description, days_of_week,start_time, duration_minutes, start_date, end_date):
+        activity = self.create(
+            user=user,
+            name=name, 
+            description=description,
+            days_of_week = days_of_week,
+            start_time = start_time,
+            duration_minutes= duration_minutes,
+            start_date = start_date,
+            end_date = end_date
+        )
+        
+        activity.create_logs() #Method to generate automatically the logs
+        return activity
+
+
 class Activity(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
@@ -34,35 +51,73 @@ class Activity(models.Model):
     duration_minutes = models.PositiveIntegerField()
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True,blank=True)
-
-    def is_scheduled_for_day(self, current_date):
-        """Checks if the activity is schedulled to day determinated."""
-        day_abbr = current_date.strftime('%a')[:3]
-        return day_abbr in self.days_of_week
-
+    
+    # Custom Manager
+    objects = ActivityManager()
+    
     def __str__(self):
         return self.name
     
+    def create_logs(self):
+        # Implementa la lógica para crear logs automáticamente
+        start_date = self.start_date or now().date()
+        end_date = self.end_date or start_date + timedelta(days=30)
+        for single_date in date_range(start_date, end_date):
+            day_abbr = single_date.strftime('%a')[:3]
+            if day_abbr in self.days_of_week:
+                ActivityLog.objects.get_or_create(activity=self, user=self.user, date=single_date)
+                
+                
+    def is_active_on_day(self, current_date):
+        """Checks if the activity is active and scheduled for a specific day."""
+        # Checks if the activity is on range of the dates
+        if self.start_date and current_date < self.start_date:
+            return False
+        if self.end_date and current_date > self.end_date:
+            return False
+        
+        # Checks if the activity is shceduled for the specific day
+        day_abbr = current_date.strftime('%a')[:3]
+        if day_abbr not in self.days_of_week:
+            return False
+        
+        # Checks if exist exceptions for the day
+        if ActivityExclusion.objects.filter(activity=self, date=current_date).exists():
+            return False
+        
+        return True
+    
+    def create_logs_for_range(self, start_date, end_date):
+        """
+        Generate dinamics logs for a date range.
+        """
+        for single_date in date_range(start_date, end_date):
+            day_abbr = single_date.strftime('%a')[:3]
+            # Validate if the activity is programed for that day
+            if day_abbr in self.days_of_week:
+                # Create the log if dosen't exist yet
+                ActivityLog.objects.get_or_create(activity=self, user=self.user, date=single_date)
+
+    def update_activity(self, name, description, days_of_week, start_time, duration_minutes, start_date, end_date):
+        self.name = name
+        self.description = description
+        self.days_of_week = days_of_week
+        self.start_time = start_time
+        self.duration_minutes = duration_minutes
+        self.start_date = start_date
+        self.end_date = end_date
+        self.save()
+
+        # Actualizar los logs asociados si cambian los días o las fechas
+        self.update_logs()
+    
+        
     @property
     def end_time(self):
         """Calculates the time end based on the duration of the activity"""
         start_datetime = datetime.combine(datetime.today(), self.start_time)
         end_datetime = start_datetime + timedelta(minutes=self.duration_minutes)
         return end_datetime.time()
-    
-    
-    def is_within_date_range(self, current_date):
-        """cheks if activity is within the date range"""
-        # Si no hay fecha de inicio, se considera continuo
-        if not self.start_date:
-            return True
-        # Si hay fecha de inicio, verifica que esté dentro del rango
-        if self.start_date and current_date < self.start_date:
-            return False
-        if self.end_date and current_date > self.end_date:
-            return False
-        return True
-        
 
     def get_days_display(self):
         days = {
@@ -76,15 +131,31 @@ class Activity(models.Model):
         }
         return ", ".join(
             [days[day] for day in self.days_of_week if day in days])
+        
+    def update_logs(self):
+        ActivityLog.objects.filter(activity=self).delete()
+        self.create_logs()
 
-    
-
+    def calculate_metrics(self):
+        logs = ActivityLog.objects.filter(activity=self)
+        total_count = logs.count()
+        completed_count = logs.filter(status='✔️').count()
+        incompleted_count = total_count - completed_count
+        return {
+            'total_count': total_count,
+            'completed_count':completed_count,
+            'incompleted_count':incompleted_count,
+            
+        }
 
 class ActivityLog(models.Model):
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField()
     status = models.CharField(max_length=10, choices=[('✔️', 'Completed'), ('❌', 'Missed')], null=True, blank=True)
+
+    class Meta:
+        unique_together = ('activity', 'user', 'date')  # Avoid the Owners
 
     def __str__(self):
         status_display = 'Completed' if self.status == '✔️' else 'Not Completed' if self.status == '❌' else 'Pending'
@@ -111,41 +182,17 @@ class ActivityLog(models.Model):
             print(f"ActivityLog creado para {activity.name} el {target_date}")
         return log
 
+class ActivityExclusion(models.Model):
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name="exclusions")
+    date = models.DateField()
+    
+    class Meta:
+        unique_together = ('activity', 'date')
 
-""" 
-* Function to create automaticly logs of activity each time is created an model of Activity
-""" 
-# @receiver(post_save, sender=Activity)
-# def create_activity_log(instance, created):
-#     if created:
-#         today = timezone.now().date()
-        
-#         if instance.user is None:
-#             raise ValueError("The activitiy must have a user asigned to create logs.")
-        
-#         # if doesn't have an end date, asumme it's an ogoing activity and create records for a one month 
-#         start_date = instance.start_date or timezone.now().date()
-#         end_date = instance.end_date or start_date + timedelta(days=30)
-#         print(f"Rango de fechas: {start_date} - {end_date}")
-        
-#         # Depuración de fechas generadas
-#         print(f"Fechas generadas por date_range: {list(date_range(start_date, end_date))}")
-        
-#         # Validación adicional para días de la semana vacíos
-#         if not instance.days_of_week:
-#             print(f"Error: No se definieron días de la semana para {instance.name}")
-#             return
-        
-#         for single_date in date_range(start_date, end_date):
-#             # Aquí usamos la abreviatura de tres letras para verificar los días
-#             day_abbr = single_date.strftime('%a')[:3]
-#             if day_abbr in instance.days_of_week.split():
-#                 ActivityLog.objects.get_or_create(
-#                     activity=instance,
-#                     user=instance.user,
-#                     date=single_date
-#                 )
-#                 print(f"Creando log para fecha: {single_date}, actividad: {instance.name}")
+    def __str__(self):
+        return f"Exclusion for {self.activity.name} on {self.date}"
+
+
 @receiver(post_save, sender=Activity)
 def create_activity_log(sender, instance, created, **kwargs):
     if created:
