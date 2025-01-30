@@ -6,7 +6,6 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.db.models.signals import post_save
 from .utils import date_range
-from django.contrib.postgres.fields import ArrayField
 
 
 
@@ -31,7 +30,7 @@ class ActivityManager(models.Manager):
             user=user,
             name=name, 
             description=description,
-            days_of_week = days_of_week,
+            days_of_week=",".join(days_of_week),
             start_time = start_time,
             duration_minutes= duration_minutes,
             start_date = start_date,
@@ -42,18 +41,32 @@ class ActivityManager(models.Manager):
         return activity
 
 
+DAYS_OF_WEEK_CHOICES = [
+    ('Mon', 'Monday'),
+    ('Tue', 'Tuesday'),
+    ('Wed', 'Wednesday'),
+    ('Thu', 'Thursday'),
+    ('Fri', 'Friday'),
+    ('Sat', 'Saturday'),
+    ('Sun', 'Sunday'),
+]
+
 class Activity(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    days_of_week = ArrayField(models.CharField(max_length=3), size= 7)
+    days_of_week = models.CharField(max_length=21, help_text="Días separados por comas (ej: Mon,Tue,Wed)")
     start_time = models.TimeField()
     duration_minutes = models.PositiveIntegerField()
     start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True,blank=True)
-    
-    # Custom Manager
+    end_date = models.DateField(null=True, blank=True)
+
+    #custom manager
     objects = ActivityManager()
+    
+    def get_days_list(self):
+        """ Convierte la cadena en una lista de días """
+        return self.days_of_week.split(",")
     
     def __str__(self):
         return self.name
@@ -64,7 +77,7 @@ class Activity(models.Model):
         end_date = self.end_date or start_date + timedelta(days=30)
         for single_date in date_range(start_date, end_date):
             day_abbr = single_date.strftime('%a')[:3]
-            if day_abbr in self.days_of_week:
+            if day_abbr in self.get_days_list(): 
                 ActivityLog.objects.get_or_create(activity=self, user=self.user, date=single_date)
                 
                 
@@ -78,7 +91,7 @@ class Activity(models.Model):
         
         # Checks if the activity is shceduled for the specific day
         day_abbr = current_date.strftime('%a')[:3]
-        if day_abbr not in self.days_of_week:
+        if day_abbr not in self.get_days_list():
             return False
         
         # Checks if exist exceptions for the day
@@ -94,14 +107,14 @@ class Activity(models.Model):
         for single_date in date_range(start_date, end_date):
             day_abbr = single_date.strftime('%a')[:3]
             # Validate if the activity is programed for that day
-            if day_abbr in self.days_of_week:
+            if day_abbr in self.get_days_list():
                 # Create the log if dosen't exist yet
                 ActivityLog.objects.get_or_create(activity=self, user=self.user, date=single_date)
 
     def update_activity(self, name, description, days_of_week, start_time, duration_minutes, start_date, end_date):
         self.name = name
         self.description = description
-        self.days_of_week = days_of_week
+        self.days_of_week = ",".join(days_of_week)
         self.start_time = start_time
         self.duration_minutes = duration_minutes
         self.start_date = start_date
@@ -120,31 +133,28 @@ class Activity(models.Model):
         return end_datetime.time()
 
     def get_days_display(self):
-        days = {
-            'Mon': 'Monday',
-            'Tue': 'Tuesday',
-            'Wed': 'Wednesday',
-            'Thu': 'Thursday',
-            'Fri': 'Friday',
-            'Sat': 'Saturday',
-            'Sun': 'Sunday'
-        }
-        return ", ".join(
-            [days[day] for day in self.days_of_week if day in days])
+        """Devuelve los días de la actividad en formato legible."""
+        days = dict(DAYS_OF_WEEK_CHOICES)
+        return ", ".join([days[day] for day in self.get_days_list() if day in days])
         
     def update_logs(self):
         # calculate the complete range of dates after update them
         start_date = self.start_date
         end_date = self.end_date
         
-        if isinstance(start_date, str):
-            start_date = datetime.strftime(start_date, '%Y-%m-%d').date()
-        if isinstance(end_date, str):
-            end_date = datetime.strftime(end_date, '%Y-%m-%d').date()
-        
-        valid_days= set(self.days_of_week)
+        valid_days = set(self.get_days_list())
         
         existing_logs = ActivityLog.objects.filter(activity=self)
+        for log in existing_logs:
+            log_day_abbr = log.date.strftime('%a')[:3]
+            if log.date < start_date or log.date > end_date or log_day_abbr not in valid_days:
+                log.delete()
+
+        for single_date in date_range(start_date, end_date):
+            day_abbr = single_date.strftime('%a')[:3]
+            if day_abbr in valid_days:
+                ActivityLog.objects.get_or_create(activity=self, user=self.user, date=single_date)
+
     
         for log in existing_logs:
             log_day_abbr = log.date.strftime('%a')[:3]
@@ -233,7 +243,7 @@ def create_activity_log(sender, instance, created, **kwargs):
         for single_date in date_range(start_date, end_date):
             # Aquí usamos la abreviatura de tres letras para verificar los días
             day_abbr = single_date.strftime('%a')[:3]
-            if day_abbr in instance.days_of_week:
+            if day_abbr in instance.get_days_list():
                 ActivityLog.objects.get_or_create(
                     activity=instance,
                     user=instance.user,
