@@ -12,28 +12,30 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = "/static/"
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "prime", "static"),
+    os.path.join(BASE_DIR, 'prime', 'static'),
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-#q9a@z5n4o-+8(6=0f-7zc6uso$%(zpsf!asnt4c+fljx-einx"
+SECRET_KEY = (
+    "django-insecure-#q9a@z5n4o-+8(6=0f-7zc6uso$%(zpsf!asnt4c+fljx-einx"
+)
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -52,7 +54,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "prime",
-    "django_celery_beat",
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -66,12 +68,12 @@ MIDDLEWARE = [
 ]
 
 # login url
-LOGIN_URL = "/login/"
+LOGIN_URL = '/login/' 
 
 
 # Redirect to home page after login
-LOGIN_REDIRECT_URL = "prime:home"
-LOGOUT_REDIRECT_URL = "prime:home"
+LOGIN_REDIRECT_URL = 'prime:home'
+LOGOUT_REDIRECT_URL = 'prime:home'
 
 ROOT_URLCONF = "makeprime.urls"
 
@@ -98,9 +100,9 @@ WSGI_APPLICATION = "makeprime.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
     }
 }
 
@@ -112,17 +114,22 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": (
             "django.contrib.auth.password_validation."
-            "UserAttributeSimilarityValidator"
-        ),
+            "UserAttributeSimilarityValidator"),
     },
     {
-        "NAME": ("django.contrib.auth.password_validation." "MinimumLengthValidator"),
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "MinimumLengthValidator"),
     },
     {
-        "NAME": ("django.contrib.auth.password_validation." "CommonPasswordValidator"),
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "CommonPasswordValidator"),
     },
     {
-        "NAME": ("django.contrib.auth.password_validation." "NumericPasswordValidator"),
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "NumericPasswordValidator"),
     },
 ]
 
@@ -145,9 +152,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # CELERY CONFIGUARTION
 
-CELERY_BROKER_URL = "redis://localhost:6379/0"
-CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = "UTC"
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
