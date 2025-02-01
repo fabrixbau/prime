@@ -9,6 +9,8 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
+import pymysql
+pymysql.install_as_MySQLdb()
 
 import os
 
@@ -41,7 +43,7 @@ SECRET_KEY = (
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['44.211.61.48', 'localhost']
 
 
 # Application definition
@@ -101,8 +103,12 @@ WSGI_APPLICATION = "makeprime.wsgi.application"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / "db.sqlite3",
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'db_prime',  # Nombre de tu base de datos
+        'USER': 'postgres',  # Tu usuario de PostgreSQL
+        'PASSWORD': '1234',  # Tu contraseña de PostgreSQL
+        'HOST': '127.0.0.1',  # Dirección del servidor de la base de datos
+        'PORT': '5432',  # Puerto de PostgreSQL, el predeterminado es 5432
     }
 }
 
