@@ -26,6 +26,11 @@ class UserProfile(models.Model):
 
 class ActivityManager(models.Manager):
     def create_activity(self, user, name, description, days_of_week,start_time, duration_minutes, start_date, end_date):
+        print(f"🚀 Creando actividad: {name}, días: {days_of_week}")
+        
+        if isinstance(days_of_week, str):  # Asegurar que no sea una cadena
+            days_of_week = days_of_week.split(",")
+        
         activity = self.create(
             user=user,
             name=name, 
@@ -36,6 +41,8 @@ class ActivityManager(models.Manager):
             start_date = start_date,
             end_date = end_date
         )
+        
+        print(f"✅ Actividad creada: {activity}")
         
         activity.create_logs() #Method to generate automatically the logs
         return activity
@@ -75,11 +82,19 @@ class Activity(models.Model):
         # Implementa la lógica para crear logs automáticamente
         start_date = self.start_date or now().date()
         end_date = self.end_date or start_date + timedelta(days=30)
+        
+        print(f"📆 Creando logs para {self.name} desde {start_date} hasta {end_date}")
+        
         for single_date in date_range(start_date, end_date):
             day_abbr = single_date.strftime('%a')[:3]
+            
+            print(f"🔍 Verificando día: {single_date} ({day_abbr})")
+            
             if day_abbr in self.get_days_list(): 
-                ActivityLog.objects.get_or_create(activity=self, user=self.user, date=single_date)
-                
+                log, created = ActivityLog.objects.get_or_create(activity=self, user=self.user, date=single_date)
+                if created:
+                    print(f"✅ Log creado para {single_date}")
+                    
                 
     def is_active_on_day(self, current_date):
         """Checks if the activity is active and scheduled for a specific day."""

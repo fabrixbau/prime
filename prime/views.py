@@ -138,7 +138,9 @@ def create_activity(request):
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
         description = request.POST.get('description', '').strip()
-        days_of_week = ",".join(request.POST.getlist('days_of_week'))
+        days_of_week = request.POST.getlist('days_of_week')
+        print(f"📅 Días seleccionados: {days_of_week}")  # <-- Verifica qué días está recibiendo
+        
         valid_days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
         if not all(day in valid_days for day in days_of_week):
             return render(request, 'prime/new_activity.html', {'error': 'Días inválidos seleccionados.'})
@@ -146,16 +148,14 @@ def create_activity(request):
         start_time = request.POST.get('start_time', '').strip()
         duration_minutes = request.POST.get('duration_minutes', '').strip()
         
-        # Maneja start_date y end_date
         start_date = request.POST.get('start_date') or now().date()
         end_date = request.POST.get('end_date') or None
 
-        # Crear y guardar la instancia de Activity con el usuario asignado
         activity = Activity.objects.create_activity(
             user=request.user,
             name=name,
             description=description,
-            days_of_week=days_of_week,
+            days_of_week=days_of_week,  # <-- Pasamos la lista directamente
             start_time=start_time,
             duration_minutes=duration_minutes,
             start_date=start_date,
