@@ -103,14 +103,18 @@ WSGI_APPLICATION = "makeprime.wsgi.application"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db_prime',  # Nombre de tu base de datos
-        'USER': 'postgres',  # Tu usuario de PostgreSQL
-        'PASSWORD': '1234',  # Tu contraseña de PostgreSQL
-        'HOST': '127.0.0.1',  # Dirección del servidor de la base de datos
-        'PORT': '5432',  # Puerto de PostgreSQL, el predeterminado es 5432
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'db_prime',  # Nombre de la base de datos en MySQL
+        'USER': 'ubuntu',  # Usuario de MySQL en la instancia EC2
+        'PASSWORD': 'FA5767bri',  # La contraseña que configuraste
+        'HOST': '127.0.0.1',  # Si MySQL está en la misma instancia EC2
+        'PORT': '3306',  # Puerto predeterminado de MySQL
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        }
     }
 }
+
 
 
 # Password validation
