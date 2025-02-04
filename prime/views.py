@@ -139,8 +139,6 @@ def create_activity(request):
         name = request.POST.get('name', '').strip()
         description = request.POST.get('description', '').strip()
         days_of_week = request.POST.getlist('days_of_week')
-        print(f"📅 Días seleccionados: {days_of_week}")  # <-- Verifica qué días está recibiendo
-        
         valid_days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
         if not all(day in valid_days for day in days_of_week):
             return render(request, 'prime/new_activity.html', {'error': 'Días inválidos seleccionados.'})
@@ -148,14 +146,16 @@ def create_activity(request):
         start_time = request.POST.get('start_time', '').strip()
         duration_minutes = request.POST.get('duration_minutes', '').strip()
         
+        # Maneja start_date y end_date
         start_date = request.POST.get('start_date') or now().date()
         end_date = request.POST.get('end_date') or None
 
+        # Crear y guardar la instancia de Activity con el usuario asignado
         activity = Activity.objects.create_activity(
             user=request.user,
             name=name,
             description=description,
-            days_of_week=days_of_week,  # <-- Pasamos la lista directamente
+            days_of_week=days_of_week,
             start_time=start_time,
             duration_minutes=duration_minutes,
             start_date=start_date,
@@ -192,17 +192,12 @@ def edit_activity(request, activity_id):
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
         description = request.POST.get('description','').strip()
-        days_of_week = ",".join(request.POST.getlist('days_of_week'))
+        days_of_week = request.POST.getlist('days_of_week')
         start_time = request.POST.get('start_time', '').strip()
         duration_minutes = request.POST.get('duration_minutes','').strip()
         start_date = request.POST.get('start_date') or activity.start_date
         end_date = request.POST.get('end_date') or activity.end_date
         
-        if isinstance(start_date, str):
-            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
-        if isinstance(end_date, str):
-            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
-
         activity.update_activity(
             name=name,
             description = description,
@@ -319,7 +314,6 @@ def activity_list(request):
                     # Excluir días marcados como excluidos
                     if not ActivityExclusion.objects.filter(activity=activity, date=current_date).exists():
                         log = ActivityLog.objects.filter(activity=activity, date=current_date).first()
-                        status = log.status if log else None
                         day_activities.append((activity, log.status if log else None, log))
 
             # Agregar datos del día al calendario
@@ -385,17 +379,19 @@ def delete_activity_for_day(request, activity_id, date):
     except ValueError:
         return HttpResponseForbidden("Fecha inválida. Usa el formato YYYY-MM-DD.")
     
-    # Record the exclusion of the day
-    exclusion, created = ActivityExclusion.objects.get_or_create(activity=activity, date= day)
-    
     # Eliminar el log para ese día específico
     ActivityLog.objects.filter(activity=activity, date=day).delete()
     
-    # check if it was made correct the exclusion
-    if created:
-        print(f"Exclusion creada para la actividad '{activity.name}' en el día {day}.")
+    # Verificar si aún hay logs asociados
+    remaining_logs = ActivityLog.objects.filter(activity=activity).exists()
+
+    # Si no quedan logs para esa actividad, no eliminar la actividad completamente
+    if not remaining_logs:
+        activity.delete()
     else:
-        print(f"Exclusion ya existente para la actividad '{activity.name}' en el dia {day}.")
+        # Si quedan logs, no eliminar la actividad, pero verifica si hay datos relacionados al día actual
+        # (esto asegura que no queden datos huérfanos para la fecha específica)
+        ActivityLog.objects.filter(activity=activity, date=day).delete()
 
     return redirect('prime:activity_list')
 
