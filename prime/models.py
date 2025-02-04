@@ -45,7 +45,7 @@ class Activity(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    days_of_week = models.CharField(max_length=21, help_text="Días separados por comas (ej: Mon,Tue,Wed)")
+    days_of_week = models.CharField(max_length=50, help_text="Días separados por comas (ej: Mon,Tue,Wed)")
     start_time = models.TimeField()
     duration_minutes = models.PositiveIntegerField()
     start_date = models.DateField(null=True, blank=True)
