@@ -358,18 +358,6 @@ def mark_activity(request, log_id):
         
 
 
-# LOGS
-
-# @login_required
-# def delete_activity_log(request, log_id):
-#     log = get_object_or_404(ActivityLog, id=log_id, user=request.user)
-
-#     if request.method == "POST"
-#         print(f"Eliminando registro de ActivityLog con ID: {log_id}")
-#         log.delete()
-#         return redirect('prime:activity_list')
-
-#     return HttpResponseForbidden("Cannot delete this activity log.")
 @login_required
 def delete_activity_for_day(request, activity_id, date):
     activity = get_object_or_404(Activity, id=activity_id, user=request.user)
