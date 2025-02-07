@@ -372,30 +372,20 @@ def mark_activity(request, log_id):
 #     return HttpResponseForbidden("Cannot delete this activity log.")
 @login_required
 def delete_activity_for_day(request, activity_id, date):
-    # Obtener la actividad
     activity = get_object_or_404(Activity, id=activity_id, user=request.user)
-    
     try:
-        # Convertir la fecha en objeto date
         day = datetime.strptime(date, '%Y-%m-%d').date()
     except ValueError:
-        return HttpResponseForbidden("Fecha inválida. Usa el formato YYYY-MM-DD.")
-    
-    # Eliminar el log para ese día específico
-    ActivityLog.objects.filter(activity=activity, date=day).delete()
-    
-    # Verificar si aún hay logs asociados
-    remaining_logs = ActivityLog.objects.filter(activity=activity).exists()
+        return HttpResponseForbidden("Date invalid. Use the format YYYY-MM-DD.")
 
-    # Si no quedan logs para esa actividad, no eliminar la actividad completamente
-    if not remaining_logs:
-        activity.delete()
-    else:
-        # Si quedan logs, no eliminar la actividad, pero verifica si hay datos relacionados al día actual
-        # (esto asegura que no queden datos huérfanos para la fecha específica)
-        ActivityLog.objects.filter(activity=activity, date=day).delete()
+    # Crea la exclusión para ese día
+    exclusion, created = ActivityExclusion.objects.get_or_create(activity=activity, date=day)
+
+    # Elimina el log asociado
+    ActivityLog.objects.filter(activity=activity, date=day).delete()
 
     return redirect('prime:activity_list')
+
 
 
 """XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"""
